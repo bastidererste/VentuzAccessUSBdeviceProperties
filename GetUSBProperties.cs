@@ -1,7 +1,7 @@
 using System;
 using Ventuz.Kernel;
- using System.Collections.Generic;
-  using System.Management; // need to add System.Management to your project references.
+using System.Collections.Generic;
+using System.Management; //add System.Management to your project references from GAC.
 
 
 
@@ -12,22 +12,29 @@ public class Script : ScriptBase, System.IDisposable
     // whether the Generate() method should return true or false
     // during its next execution.
     private bool changed;
-  string[] _deviceID;
+    // create temp array
+    string[] _deviceID;
 
     // This Method is called if the component is loaded/created.
     public Script()
     {
-		ManagementObjectSearcher Search = new ManagementObjectSearcher ("Select * From Win32_USBHub");
+    		//create the search query to select all "*" devices "within" Win32_USBHub
+		ManagementObjectSearcher search = new ManagementObjectSearcher ("Select * From Win32_USBHub");
 		
-		_deviceID = new string[Search.Get().Count];
+		//create a temp array the size of the search result 
+		_deviceID = new string[search.Get().Count];
 
+		//create an indexer
 		int i = 0;
-		foreach (ManagementBaseObject mbo in Search.Get())
+		
+		//get each USBdevice in the search result
+		foreach (ManagementBaseObject mbo in search.Get())
 		{
+		//assign the deviceID of each USBDevice in the search result to the temp array at position i
 		_deviceID[i] = mbo["DeviceID"].ToString();
 	 
-	
-			i++;
+		//increment indexer
+		i++;
 		}
 		
 		changed = true;
@@ -56,7 +63,8 @@ public class Script : ScriptBase, System.IDisposable
     //               values really have been changed.
     public override bool Generate()
     {
-		
+    		// assaign temp array to the output array.
+		// See here why temporary arrays are needed: http://sebastianspiegl.de/?q=Working-with-matrices-and-arrays-in-Ventuz-C%23-scripts%20		
 		deviceIDs = _deviceID;
 		
         if (changed)
